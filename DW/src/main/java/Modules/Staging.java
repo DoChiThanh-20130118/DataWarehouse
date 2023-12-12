@@ -1,6 +1,9 @@
 package Modules;
 
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -32,8 +35,8 @@ public class Staging {
             connection = DriverManager.getConnection(jdbcURL, username, password);
 
             /*4. Xử lý dữ liệu (Đọc file, load nd file,...) */
-            try (FileReader fileReader = new FileReader(csvFilePath);
-                 CSVParser csvParser = CSVFormat.DEFAULT.withHeader().parse(fileReader);) {
+            try (InputStreamReader streamReader = new InputStreamReader(new FileInputStream(csvFilePath), StandardCharsets.UTF_8);
+                 CSVParser csvParser = CSVFormat.DEFAULT.withHeader().parse(streamReader);) {
                 /* 7. Cập nhật status cho envent được thực hiện */
                 ControlConnect.insertLog("xosohomnay", "Get data from file to Staging", "Start");
 
@@ -111,7 +114,6 @@ public class Staging {
             }
         }
     }
-    /* Ghi lại logs*/
 
     /* Gửi email thông báo xự kiện insert đã diễn ra*/
     private static void sendEmail(String messageBody) {
