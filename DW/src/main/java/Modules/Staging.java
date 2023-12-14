@@ -23,8 +23,8 @@ public class Staging {
         if (ControlConnect.checkLog("xosohomnay","Get data from file to Staging","Success")==false){
             process();
         }else {
-            sendEmail("The data download was skipped because it was already done on"+ LocalDate.now());
-            System.out.println("The data download was skipped because it was already done on"+ LocalDate.now());
+            sendEmail("The data download was skipped because it was already done on "+ LocalDate.now());
+            System.out.println("The data download was skipped because it was already done on "+ LocalDate.now());
         }
     }
     public static void process() {
