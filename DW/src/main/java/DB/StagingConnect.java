@@ -18,7 +18,6 @@ public class StagingConnect {
 
     public static String getJdbcUrl() {
     	String s=(new StringBuilder()).append(properties.getProperty("db.jdbcUrl")).append("://").append(getHost()).append(":").append(getPort()).append("/").append(getName()).toString();
-//        return properties.getProperty("db.jdbcUrl")+"://"+ getHost()+ ":"+getPort()+"/"+getName();
         return s;
     }
     public static String getHost() {

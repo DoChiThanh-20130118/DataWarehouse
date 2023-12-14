@@ -47,7 +47,7 @@ public class ControlConnect {
     }
 
     /*
-    3. Lấy đường dẫn đến file csv
+    4. Lấy đường dẫn đến file csv
      */
     public static String getCsvPath(){
         return getCsvFilePath()+getCsvNameFile();

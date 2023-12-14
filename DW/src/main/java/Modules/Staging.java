@@ -19,10 +19,20 @@ import org.apache.commons.csv.CSVRecord;
 
 
 public class Staging {
+
+    /*3. Kiểm tra xem dư liệu của ngày hôm nay đã được thêm vào chưa?*/
     public static void run_process(){
-        if (ControlConnect.checkLog("xosohomnay","Get data from file to Staging","Success")==false){
+        if ((ControlConnect.checkLog("xosohomnay","Get data from file to Staging","Success")==false)&&
+                (ControlConnect.checkLog("xosohomnay","Get data from source","Success")==true)){
             process();
         }else {
+            /*3.1. Gửi Thông báo đã có dữ liệu về Email admin */
+            if (ControlConnect.checkLog("xosohomnay","Get data from source","Success")==false){
+                sendEmail("Get data from source not yet completed!!!");
+                System.out.println("Get data from source not yet completed!!!");
+
+            }
+
             sendEmail("The data download was skipped because it was already done on "+ LocalDate.now());
             System.out.println("The data download was skipped because it was already done on "+ LocalDate.now());
         }
@@ -30,20 +40,20 @@ public class Staging {
     public static void process() {
         Connection connection = null;
         try {
-            /* 3. Lấy đường dẫn đến file csv mới */
+            /* 4. Lấy đường dẫn đến file csv mới */
             String csvFilePath = ControlConnect.getCsvPath();
-            /*	5. Load các biến cục bộ kết nối với StagingConnect */
+            /*	6. Load các biến cục bộ kết nối với StagingConnect */
             String jdbcURL = StagingConnect.getJdbcUrl();
             String username = StagingConnect.getUsername();
             String password = StagingConnect.getPassword();
 
-            /* 6. Kết nối với Staging.db */
+            /* 7. Kết nối với Staging.db */
             connection = DriverManager.getConnection(jdbcURL, username, password);
 
-            /*4. Xử lý dữ liệu (Đọc file, load nd file,...) */
+            /*5. Xử lý dữ liệu (Đọc file, load nd file,...) */
             try (InputStreamReader streamReader = new InputStreamReader(new FileInputStream(csvFilePath), StandardCharsets.UTF_8);
                  CSVParser csvParser = CSVFormat.DEFAULT.withHeader().parse(streamReader);) {
-                /* 7. Cập nhật status cho envent được thực hiện */
+                /* 8. Cập nhật status cho envent được thực hiện */
                 ControlConnect.insertLog("xosohomnay", "Get data from file to Staging", "Start");
 
                 // Lấy ngày, miền, tên tỉnh để kiểm tra sự tồn tại của dữ liệu
@@ -56,7 +66,7 @@ public class Staging {
 
                 try (PreparedStatement existenceStatement = connection.prepareStatement(checkExistenceQuery);
                      PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
-                    /* 8. Xử lý trùng lắp dữ liệu */
+                    /* 9. Xử lý trùng lắp dữ liệu */
                     for (CSVRecord record : csvParser) {
                         /* Lấy dữ liệu từ CSV Record */
                         String date = record.get("Ngay");
@@ -71,9 +81,9 @@ public class Staging {
                             if (resultSet.next() && resultSet.getInt(1) > 0) {
                                 String message = "Data already exists for date: " + date + ", regions: " + regions
                                         + ", name_province: " + name_province;
-                                /* 8.1. Gửi Thông báo trùng lắp về Email admin */
+                                /* 9.1. Gửi Thông báo trùng lắp về Email admin */
                                 sendEmail(message);
-                                /* 8.2. Ghi log trạng thái trùng lấp và chuyển sang dòng tiếp theo */
+                                /* 9.2. Ghi log trạng thái trùng lấp và chuyển sang dòng tiếp theo */
                                 ControlConnect.insertLog("xosohomnay", "Get data from file to Staging", "Data already exists");
                                 System.out.println(message);
                                 continue;
@@ -91,25 +101,25 @@ public class Staging {
                             preparedStatement.setString(i + 1, record.get(columnNames[i]));
                         }
 
-                        /* 9. Insert dữ liệu vào Staging.db*/
+                        /* 10. Insert dữ liệu vào Staging.db*/
                         preparedStatement.executeUpdate();
                     }
                 }
 
                 System.out.println("Data loaded into Staging successfully.");
-                /* 10. Thông báo trạng thái về Email admin */
+                /* 11. Thông báo trạng thái về Email admin */
                 sendEmail("Data loaded into Staging database successfully.");
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            /* 11. Cập nhật lại status trong logs sau khi đã insert thành công */
+            /* 12. Cập nhật lại status trong logs sau khi đã insert thành công */
             ControlConnect.insertLog("xosohomnay", "Get data from file to Staging", "Success");
 
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            /* 12. Đóng kết nối */
+            /* 13. Đóng kết nối */
             if (connection != null) {
                 try {
                     connection.close();
