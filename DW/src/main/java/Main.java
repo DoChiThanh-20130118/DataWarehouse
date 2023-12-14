@@ -17,6 +17,6 @@ public class Main {
 		if (!setUTF8Output()) {
 			return;
 		}
-		Staging.process();
+		Staging.run_process();
 	}
 }

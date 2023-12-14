@@ -11,6 +11,7 @@ import java.util.Properties;
 
 public class ControlConnect {
     private static final Properties properties = new Properties();
+
     /*
     1.Load các biến cục bộ cho ControlConnect từ control.properties
      */
@@ -84,6 +85,42 @@ public class ControlConnect {
         }
         return nameFile;
     }
+    /* Phương thức check Logs xem Get data from file to Staging
+    * Dùng để kiểm tra xem trong ngày hôm đó đã chạy dữ liệu hay chưa*/
+    public static boolean checkLog(String name, String event_type, String status) {
+        boolean rs = false;
+        String jdbcURL = getJdbcUrl();
+        String username = getUsername();
+        String password = getPassword();
+
+        String checkLogQuery = "SELECT COUNT(*) FROM logs WHERE name = ? AND event_type = ? AND status = ? AND DATE(created_at) = DATE(?)";
+
+        try (Connection connection = DriverManager.getConnection(jdbcURL, username, password);
+             PreparedStatement preparedStatement = connection.prepareStatement(checkLogQuery)) {
+
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, event_type);
+            preparedStatement.setString(3, status);
+            preparedStatement.setDate(4, getCurrentDate());
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    int count = resultSet.getInt(1);
+                    if (count > 0) return rs=true;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return rs;
+    }
+
+    // Lấy ngày hiện tại
+    private static java.sql.Date getCurrentDate() {
+        java.util.Date today = new java.util.Date();
+        return new java.sql.Date(today.getTime());
+    }
 
     /*
     Phương thức ghi Logs
@@ -118,7 +155,8 @@ public class ControlConnect {
 //        System.out.println(getCsvNameFile());
 //        String nameFile = getCsvNameFile();
 //        System.out.println(getCsvFilePath()+nameFile);
-        System.out.println(getCsvPath());
+//        System.out.println(getCsvPath());
+        System.out.println( checkLog("xosohomnay","Get data from file to Staging","Success"));
 
     }
 }

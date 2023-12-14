@@ -4,10 +4,8 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
+import java.time.LocalDate;
 
 import DB.StagingConnect;
 import DB.ControlConnect;
@@ -21,6 +19,14 @@ import org.apache.commons.csv.CSVRecord;
 
 
 public class Staging {
+    public static void run_process(){
+        if (ControlConnect.checkLog("xosohomnay","Get data from file to Staging","Success")==false){
+            process();
+        }else {
+            sendEmail("The data download was skipped because it was already done on"+ LocalDate.now());
+            System.out.println("The data download was skipped because it was already done on"+ LocalDate.now());
+        }
+    }
     public static void process() {
         Connection connection = null;
         try {
