@@ -1,6 +1,7 @@
 package DB;
 
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -17,15 +18,17 @@ public class StagingConnect {
     }
 
     public static String getJdbcUrl() {
-    	String s=(new StringBuilder()).append(properties.getProperty("db.jdbcUrl")).append("://").append(getHost()).append(":").append(getPort()).append("/").append(getName()).toString();
+        String s = (new StringBuilder()).append(properties.getProperty("db.jdbcUrl")).append("://").append(getHost()).append(":").append(getPort()).append("/").append(getName()).toString();
         return s;
     }
+
     public static String getHost() {
-		return properties.getProperty("db.host");
-	}
+        return properties.getProperty("db.host");
+    }
+
     public static String getPort() {
-		return properties.getProperty("db.port");
-	}
+        return properties.getProperty("db.port");
+    }
 
     public static String getUsername() {
         return properties.getProperty("db.username");
@@ -34,21 +37,20 @@ public class StagingConnect {
     public static String getPassword() {
         return properties.getProperty("db.password");
     }
+
     public static String getName() {
-		return properties.getProperty("db.name");
-	}
-    
-    public static String getCsvFilePath() {
-    	String s = (new StringBuilder()).append(properties.getProperty("csv.filePath")).append("\\").append(getCsvNameFile()).toString();
-//        return properties.getProperty("csv.filePath")+"\\"+getCsvNameFile();
-        return s;
+        return properties.getProperty("db.name");
     }
-    public static String getCsvNameFile() {
-        return properties.getProperty("csv.nameFile");
+
+    public static String getFilePath(){
+        return ControlConnect.getFilePath();
     }
     public static void main(String[] args) {
-		System.out.println(getJdbcUrl());
-		System.out.println(getCsvFilePath());
-	}
+//		System.out.println(getJdbcUrl());
+		System.out.println(getFilePath());
+//        File f = new File("data/xosohomnay.com.vn_10_12_20230.csv");
+//        String str = f.getAbsolutePath();
+//        System.out.println(f.getAbsolutePath());
+    }
 }
 

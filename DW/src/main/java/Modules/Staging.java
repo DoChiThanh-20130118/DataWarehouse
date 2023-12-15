@@ -5,7 +5,9 @@ import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
+import java.text.DateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import DB.StagingConnect;
 import DB.ControlConnect;
@@ -41,7 +43,8 @@ public class Staging {
         Connection connection = null;
         try {
             /* 4. Lấy đường dẫn đến file csv mới */
-            String csvFilePath = ControlConnect.getCsvPath();
+//            String csvFilePath = "D:/datawarehouse/Datawarehouse_Extract/data/xosohomnay.com.vn_14_12_20230.csv";
+            String csvFilePath = ControlConnect.getFilePath();
             /*	6. Load các biến cục bộ kết nối với StagingConnect */
             String jdbcURL = StagingConnect.getJdbcUrl();
             String username = StagingConnect.getUsername();
@@ -52,6 +55,7 @@ public class Staging {
 
             /*5. Xử lý dữ liệu (Đọc file, load nd file,...) */
             try (InputStreamReader streamReader = new InputStreamReader(new FileInputStream(csvFilePath), StandardCharsets.UTF_8);
+
                  CSVParser csvParser = CSVFormat.DEFAULT.withHeader().parse(streamReader);) {
                 /* 8. Cập nhật status cho envent được thực hiện */
                 ControlConnect.insertLog("xosohomnay", "Get data from file to Staging", "Start");
@@ -72,8 +76,18 @@ public class Staging {
                         String date = record.get("Ngay");
                         String regions = record.get("Mien");
                         String name_province = record.get("TenDai");
+                        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-                        existenceStatement.setString(1, date);
+                        // Chuyển đổi chuỗi ngày thành LocalDate
+                        LocalDate localDate = LocalDate.parse(date, inputFormatter);
+
+                        // Định dạng của LocalDate đầu ra
+                        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+                        // Chuyển đổi thành định dạng mới
+                        LocalDate formattedDate = LocalDate.parse(localDate.format(outputFormatter));
+
+                        existenceStatement.setDate(1, Date.valueOf(formattedDate));
                         existenceStatement.setString(2, regions);
                         existenceStatement.setString(3, name_province);
 
@@ -97,7 +111,8 @@ public class Staging {
                                 "TienThuong_Tu", "GiaiBa", "TienThuong_Ba", "GiaiNhi", "TienThuong_Nhi", "GiaiNhat",
                                 "TienThuong_Nhat", "giaidacbiet", "TienThuong_DB"};
 
-                        for (int i = 0; i < columnNames.length; i++) {
+                        preparedStatement.setString(1, String.valueOf(formattedDate));
+                        for (int i = 1; i < columnNames.length; i++) {
                             preparedStatement.setString(i + 1, record.get(columnNames[i]));
                         }
 
@@ -109,12 +124,13 @@ public class Staging {
                 System.out.println("Data loaded into Staging successfully.");
                 /* 11. Thông báo trạng thái về Email admin */
                 sendEmail("Data loaded into Staging database successfully.");
+                /* 12. Cập nhật lại status trong logs sau khi đã insert thành công */
+                ControlConnect.insertLog("xosohomnay", "Get data from file to Staging", "Success");
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            /* 12. Cập nhật lại status trong logs sau khi đã insert thành công */
-            ControlConnect.insertLog("xosohomnay", "Get data from file to Staging", "Success");
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -151,4 +167,8 @@ public class Staging {
 
     }
 
+    public static void main(String[] args) {
+        String csvFilePath = ControlConnect.getFilePath();
+        System.out.println(csvFilePath);
+    }
 }
