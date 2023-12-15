@@ -1,1 +1,0 @@
-java -Dfile.encoding=UTF-8 -jar D:\HK1-4\DataWarehouse\CK_Warehouse\DataWarehouse\out\artifacts\DataWarehouse_jar\DataWarehouse.jar

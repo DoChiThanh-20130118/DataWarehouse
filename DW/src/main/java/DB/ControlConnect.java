@@ -71,7 +71,6 @@ public class ControlConnect {
             String selectFilePath = "SELECT CONCAT(fc.location, '/', df.name) AS full_path FROM file_configs fc JOIN data_files df ON fc.id = df.df_config_id ORDER BY df.id DESC LIMIT 1";
             try (PreparedStatement preparedStatement = connection.prepareStatement(selectFilePath);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
-
                 /* Đọc dữ liệu từ ResultSet*/
                 if (resultSet.next()) {
                     String full_path = resultSet.getString("full_path");
